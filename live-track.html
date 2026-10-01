@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediVerse | Live Queue Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #2D6A4F;
+            --text: #1B4332;
+            --accent: #52B788;
+            --light-green: #E8F5E9;
+            --danger: #bc4749;
+            --warning: #f1a545;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f5;
+            margin: 0;
+            padding: 20px;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 40px);
+        }
+
+        .tracker-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(27, 67, 50, 0.08);
+            border: 1px solid #e1e8e4;
+            padding: 30px 25px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+        }
+
+        .doctor-profile-card {
+            background: #f8faf9;
+            border: 1px solid #e3ebd7;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .doctor-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 5px 0;
+        }
+
+        .doctor-sub {
+            font-size: 0.85rem;
+            color: #556B5C;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .token-display-box {
+            background: var(--light-green);
+            border-radius: 20px;
+            padding: 25px 15px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .token-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+
+        .token-number {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin: 10px 0;
+            line-height: 1;
+        }
+
+        .status-pill {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 6px 16px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+        
+        .status-waiting { background: #d8f3dc; color: #1b4332; }
+        .status-next { background: #ffe3a8; color: #b07d00; animation: pulseGlow 2s infinite; }
+        .status-inside { background: #fcd5d5; color: #bc4749; animation: pulseGlow 1.5s infinite; }
+        .status-completed { background: #e3f2fd; color: #0d47a1; }
+        .status-missed { background: #f5f5f5; color: #616161; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            background: #f8faf9;
+            border: 1px solid #e1e8e4;
+            border-radius: 14px;
+            padding: 15px 10px;
+        }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .metric-title {
+            font-size: 0.78rem;
+            color: #556B5C;
+            font-weight: 600;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #556B5C;
+            margin-top: 20px;
+            border-top: 1px solid #f0f4f1;
+            padding-top: 15px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ff4d4d;
+            border-radius: 50%;
+            animation: pulseDot 1.5s infinite;
+        }
+
+        .error-state {
+            display: none;
+            color: var(--danger);
+            padding: 20px;
+        }
+        .error-state i { font-size: 3rem; margin-bottom: 15px; }
+
+        @keyframes pulseDot {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(188, 71, 73, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(188, 71, 73, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(188, 71, 73, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tracker-container" id="trackerWidget">
+        <div class="brand-header">
+            <i class="fa-solid fa-heart-pulse"></i> MediVerse Live Tracking
+        </div>
+
+        <div id="mainContent">
+            <div class="doctor-profile-card">
+                <div class="doctor-name" id="docNameDisplay">Loading Clinician...</div>
+                <div class="doctor-sub">Assigned Consultant</div>
+            </div>
+
+            <div class="token-display-box">
+                <div class="token-label">Your Scheduled Token</div>
+                <div class="token-number" id="tokenNumDisplay">--</div>
+                <span class="status-pill status-waiting" id="statusPill">Syncing Status...</span>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="patientsBeforeVal">--</div>
+                    <div class="metric-title">Patients Ahead</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="waitTimeVal">-- mins</div>
+                    <div class="metric-title">Est. Wait Time</div>
+                </div>
+            </div>
+
+            <div class="metric-card" style="margin-bottom: 15px; width: 100%; box-sizing: border-box;">
+                <div class="metric-value" id="currentInsideVal" style="color: var(--danger);">--</div>
+                <div class="metric-title"><i class="fa-solid fa-door-open"></i> Currently Inside Consultation Room</div>
+            </div>
+
+            <div class="live-indicator">
+                <div class="pulse-dot"></div> Connected to live hospital terminal pipeline. Auto-refreshing.
+            </div>
+        </div>
+
+        <div class="error-state" id="errorDisplay">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3 style="margin: 0 0 10px 0;">Tracking URL Parameter Error</h3>
+            <p id="errorText" style="font-size: 0.9rem; margin: 0; line-height: 1.5;">Could not query live telemetry framework data lines.</p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const doctorNameParam = urlParams.get('doctorName') || urlParams.get('doctor');
+        const tokenParam = urlParams.get('token');
+
+        async function fetchLiveQueueMetrics() {
+            if (!doctorNameParam || !tokenParam) {
+                showErrorBox("Missing registration mapping keys. Please scan a valid WhatsApp token link framework asset.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/queue/live-status?doctorName=${encodeURIComponent(doctorNameParam)}&patientToken=${encodeURIComponent(tokenParam)}`);
+                
+                if (!response.ok) {
+                    throw new Error("Target clinical terminal returned fault exception code.");
+                }
+
+                const data = await response.json();
+
+                document.getElementById('docNameDisplay').innerText = data.doctorName || doctorNameParam;
+                document.getElementById('tokenNumDisplay').innerText = `T-${tokenParam}`;
+                
+                const insideToken = data.currentTokenInside;
+                document.getElementById('currentInsideVal').innerText = (insideToken === "None" || insideToken == 0) ? "None (Awaiting Next)" : `T-${insideToken}`;
+
+                const currentStatus = data.status || "Waiting";
+                const statusPill = document.getElementById('statusPill');
+                statusPill.innerText = currentStatus;
+                statusPill.className = "status-pill";
+
+                if (currentStatus === "Waiting") {
+                    statusPill.classList.add('status-waiting');
+                    document.getElementById('patientsBeforeVal').innerText = data.patientsBefore;
+                    document.getElementById('waitTimeVal').innerText = `${data.estimatedWaitMinutes} mins`;
+                } else if (currentStatus === "Next") {
+                    statusPill.classList.add('status-next');
+                    document.getElementById('patientsBeforeVal').innerText = "0";
+                    document.getElementById('waitTimeVal').innerText = "Please stand by room door";
+                } else if (currentStatus === "Inside") {
+                    statusPill.classList.add('status-inside');
+                    document.getElementById('patientsBeforeVal').innerText = "Active Session";
+                    document.getElementById('waitTimeVal').innerText = "In Progress";
+                } else if (currentStatus === "Completed") {
+                    statusPill.classList.add('status-completed');
+                    document.getElementById('patientsBeforeVal').innerText = "Finished";
+                    document.getElementById('waitTimeVal').innerText = "0 mins";
+                } else if (currentStatus === "Missed") {
+                    statusPill.classList.add('status-missed');
+                    document.getElementById('patientsBeforeVal').innerText = "N/A";
+                    document.getElementById('waitTimeVal').innerText = "Line Missed";
+                }
+
+            } catch (err) {
+                console.error("Live track telemetry pipeline network fault:", err);
+            }
+        }
+
+        function showErrorBox(msg) {
+            document.getElementById('mainContent').style.display = 'none';
+            const errBox = document.getElementById('errorDisplay');
+            errBox.style.display = 'block';
+            document.getElementById('errorText').innerText = msg;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchLiveQueueMetrics();
+            setInterval(fetchLiveQueueMetrics, 4000);
+        });
+    </script>
+</body>
+</html>

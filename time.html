@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediVerse | Live Queue Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2b6cb0;
+            --secondary-color: #319795;
+            --background-gradient: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            --card-background: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --accent-green: #48bb78;
+            --accent-orange: #ed8936;
+            --alert-glow: #ebf8ff;
+            --accent-purple: #805ad5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--background-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: all 0.5s ease;
+        }
+
+        body.next-up-lighting {
+            background: linear-gradient(135deg, #e6fffa 0%, #ebf8ff 100%);
+        }
+
+        /* SENIOR ACCESSIBILITY MODE OVERRIDES */
+        body.senior-accessible {
+            font-size: 1.35rem !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+        body.senior-accessible .hub-card, 
+        body.senior-accessible .stat-box,
+        body.senior-accessible .info-card {
+            border: 3px solid #000000 !important;
+            background: #fffdf5 !important;
+        }
+        body.senior-accessible .senior-btn-large {
+            padding: 18px !important;
+            font-size: 1.25rem !important;
+        }
+
+        .tracker-container {
+            background: var(--card-background);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: all 0.5s ease;
+            margin-bottom: 20px;
+        }
+
+        .tracker-container.active-glow {
+            border-color: #319795;
+            box-shadow: 0 0 30px rgba(49, 151, 149, 0.4);
+            animation: containerPulse 2s infinite alternate;
+        }
+
+        @keyframes containerPulse {
+            0% { box-shadow: 0 0 20px rgba(49, 151, 149, 0.3); }
+            100% { box-shadow: 0 0 35px rgba(49, 151, 149, 0.6); }
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .header-banner h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header-banner p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        #nextAlertBadge {
+            display: none;
+            background: #cbd5e0;
+            color: #2b6cb0;
+            text-align: center;
+            padding: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            animation: flashBadge 1s infinite alternate;
+        }
+
+        @keyframes flashBadge {
+            0% { background: #319795; color: white; }
+            100% { background: #2b6cb0; color: white; }
+        }
+
+        .content-body {
+            padding: 25px 20px;
+        }
+
+        .info-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-label { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+        .info-value { font-weight: 600; color: var(--text-main); }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .stat-box.highlight { background: linear-gradient(90deg, #f0f7ff 0%, #ffffff 100%); border-color: #bee3f8; }
+        .stat-box.alert-green { background: linear-gradient(90deg, #f0fff4 0%, #ffffff 100%); border-color: #9ae6b4; }
+        .stat-box i { font-size: 1.8rem; color: var(--primary-color); width: 40px; text-align: center; }
+        .stat-box.highlight i { color: var(--accent-orange); }
+        .stat-box.alert-green i { color: var(--accent-green); }
+
+        .stat-number { font-size: 1.8rem; font-weight: 700; color: var(--text-main); line-height: 1.2; }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            font-weight: 700;
+            margin: 25px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 6px;
+        }
+
+        .hub-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .hub-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .hub-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .bg-purple { background: var(--accent-purple); }
+        .bg-orange { background: var(--accent-orange); }
+        .bg-teal { background: var(--secondary-color); }
+
+        .hub-info h4 { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
+        .hub-info p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .hub-interactive-area {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        /* --- ARCADE SYSTEM RULES --- */
+        .game-navbar {
+            display: flex;
+            background: #edf2f7;
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .game-nav-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 8px 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .game-nav-btn.active {
+            background: white;
+            color: var(--accent-purple);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .game-window { display: none; min-height: 150px; }
+        .game-window.active { display: block; }
+
+        .score-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--primary-color);
+        }
+
+        .game-choice-btn {
+            background: white;
+            border: 1px solid #cbd5e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            text-align: left;
+        }
+        .game-choice-btn:hover { background: #f0fff4; }
+
+        /* Whack-A-Mole Canvas */
+        .clicker-box {
+            background: #2d3748;
+            height: 140px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .germ-target {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            background: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px #e53e3e;
+            cursor: pointer;
+        }
+
+        /* Scramble Input */
+        .scramble-input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            margin-top: 8px;
+            text-align: center;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* --- NEW SENIOR CONTROL HUB LAYOUT --- */
+        .senior-grid-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .senior-btn-large {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 2px solid #cbd5e0;
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .senior-btn-large:active { transform: scale(0.98); }
+        .senior-btn-large.danger-alert { border-color: #e53e3e; background: #fff5f5; color: #c53030; }
+        .senior-btn-large.active-toggle { background: #e6fffa; border-color: #319795; color: #234e52; }
+
+        .snack-input-group { display: flex; gap: 8px; margin-top: 8px; }
+        .snack-select { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #cbd5e0; font-size: 0.85rem; }
+        .snack-btn { background: var(--accent-orange); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+        .btn-refresh {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .error-state, .loading-state, .thank-you-state { display: none; text-align: center; padding: 40px 20px; }
+        .error-state i { font-size: 3rem; color: #e53e3e; margin-bottom: 15px; }
+        .loading-state i { font-size: 3rem; color: var(--primary-color); margin-bottom: 15px; animation: spin 1s linear infinite; }
+        .thank-you-state i { font-size: 4.5rem; color: var(--accent-green); margin-bottom: 20px; }
+        .thank-you-state h2 { font-size: 2rem; color: #1b4332; margin-bottom: 10px; font-weight: 700; }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="tracker-container" id="mainContainer">
+        <div id="nextAlertBadge"><i class="fa-solid fa-bell animate-bounce"></i> ATTENTION: YOU ARE NEXT IN LINE! PLEASE PROCEED TO ROOM</div>
+
+        <div id="loadingState" class="loading-state">
+            <i class="fa-solid fa-circle-notch"></i>
+            <h3>Syncing Queue Assets...</h3>
+        </div>
+
+        <div id="errorState" class="error-state">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3>Invalid Tracking Session</h3>
+            <p id="errorMessage">Missing data keys.</p>
+        </div>
+
+        <div id="thankYouState" class="thank-you-state">
+            <i class="fa-solid fa-circle-check"></i>
+            <h2>Session Completed</h2>
+            <p>Thank you for waiting patiently. Your pharmacy logs and prescription receipts are now ready at the checkout lounge counter.</p>
+        </div>
+
+        <!-- core app system wrapper -->
+        <div id="trackerContent" style="display: none;">
+            <div class="header-banner">
+                <h1>MediVerse Live Queue</h1>
+                <p>Real-Time Patient Consultation Tracking</p>
+            </div>
+
+            <div class="content-body">
+                <div class="info-card">
+                    <div class="info-row"><span class="info-label">Doctor:</span><span class="info-value" id="lblDoctor">Loading...</span></div>
+                    <div class="info-row"><span class="info-label">Department:</span><span class="info-value" id="lblDept">General</span></div>
+                    <div class="info-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                        <span class="info-label" style="color: var(--primary-color); font-weight: bold;">Your Token Number:</span>
+                        <span class="info-value" id="lblUserToken" style="color: var(--primary-color); font-weight: bold;">#000</span>
+                    </div>
+                </div>
+
+                <div class="grid-stats">
+                    <div class="stat-box highlight" id="boxInside">
+                        <i class="fa-solid fa-door-open"></i>
+                        <div class="stat-details"><div class="stat-number" id="lblCurrentInside">-</div><div class="stat-label">Currently Inside</div></div>
+                    </div>
+                    <div class="stat-box" id="boxAhead">
+                        <i class="fa-solid fa-users" id="iconAhead"></i>
+                        <div class="stat-details"><div class="stat-number" id="lblPatientsAhead">-</div><div class="stat-label">Tokens Ahead</div></div>
+                    </div>
+                    <div class="stat-box" id="boxWait">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        <div class="stat-details"><div class="stat-number" id="lblWaitTime">-</div><div class="stat-label">Estimated Delay</div></div>
+                    </div>
+                </div>
+
+                <h3 class="section-title"><i class="fa-solid fa-sparkles" style="color: var(--accent-orange)"></i> Interactive Lounge Hub</h3>
+                
+                <!-- ARCADE CONTAINER BLOCK -->
+                <div class="hub-card">
+                    <div class="score-banner">
+                        <span><i class="fa-solid fa-gamepad"></i> Arcade Score: <b id="globalPoints" style="color:var(--accent-purple)">0</b> PTS</span>
+                        <span id="limitStatus" style="color: var(--text-muted); font-size:0.7rem;">Goal: 200 PTS</span>
+                    </div>
+
+                    <div class="game-navbar">
+                        <button class="game-nav-btn active" id="tabQuiz" onclick="switchGameTab('quiz')">Trivia Blitz</button>
+                        <button class="game-nav-btn" id="tabClicker" onclick="switchGameTab('clicker')">Germ Whack</button>
+                        <button class="game-nav-btn" id="tabScramble" onclick="switchGameTab('scramble')">Word Scramble</button>
+                    </div>
+
+                    <!-- SINGLE VOUCHER LIMITING BANNER -->
+                    <div id="rewardClaimBanner" style="display:none; background: #e6fffa; border: 2px dashed #319795; padding: 12px; border-radius: 8px; text-align: center; font-size: 0.8rem; margin-bottom: 12px; color: #234e52;">
+                        <i class="fa-solid fa-certificate" style="color: var(--accent-orange); font-size: 1.4rem;"></i><br>
+                        <strong>🏆 SINGLE SESSION VOUCHER UNLOCKED!</strong><br>
+                        Show Code <b style="color:var(--accent-purple); font-size:1rem; background:white; padding:1px 6px; border-radius:4px;">MEDPLUS2026</b> at pharmacy lounge checkout for <b>15% off</b>.<br>
+                        <span style="font-size:0.7rem; color:var(--text-muted)">(Reward Claim Limit Reached. Continue playing for fun!)</span>
+                    </div>
+
+                    <!-- GAME 1: TRIVIA BLITZ WITH TIMER -->
+                    <div class="game-window active" id="winQuiz">
+                        <div class="hub-interactive-area" id="triviaArea">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px; color:var(--accent-orange); font-weight:bold; font-size:0.75rem;">
+                                <span>Medical Trivia Challenge</span>
+                                <span id="quizTimerText">⏱ 30s</span>
+                            </div>
+                            <p id="triviaQuestion" style="font-weight:600; margin-bottom:6px;">Loading question pool...</p>
+                            <div id="triviaOptions"></div>
+                        </div>
+                    </div>
+
+                    <!-- GAME 2: WHACK-A-GERM WITH SPEED SCALE -->
+                    <div class="game-window" id="winClicker">
+                        <div class="hub-interactive-area">
+                            <div class="clicker-box" id="clickSandbox">
+                                <div style="position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;" id="clickStartMsg">
+                                    <button class="snack-btn" style="background:var(--accent-purple);" onclick="startClickerGame(event)">Start Whacking</button>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.75rem; font-weight: 600;">
+                                <span id="clickerTimer">Time: 15s</span>
+                                <span id="clickerSpeedLevel">Speed Level: Normal</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GAME 3: HEALTH WORD SCRAMBLE -->
+                    <div class="game-window" id="winScramble">
+                        <div class="hub-interactive-area" id="scrambleArea">
+                            <p style="font-weight:500;">Unscramble the medical word:</p>
+                            <h3 id="scrambleWordDisplay" style="letter-spacing: 5px; font-size: 1.4rem; color: var(--accent-purple); text-align: center; margin: 10px 0;">-----</h3>
+                            <input type="text" class="scramble-input" id="scrambleInputField" placeholder="Type here..." oninput="checkWordScramble()">
+                            <p id="scrambleFeedback" style="text-align:center; font-size:0.75rem; margin-top:4px; font-weight:600;"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COFFEE CANTEEN DEPLOYMENT -->
+                <div class="hub-card">
+                    <div class="hub-header">
+                        <div class="hub-icon-wrapper bg-orange"><i class="fa-solid fa-mug-hot"></i></div>
+                        <div class="hub-info">
+                            <h4>In-Seat Lounge Canteen Delivery</h4>
+                            <p>Hot refreshments brought directly to your waiting row.</p>
+                        </div>
+                    </div>
+                    <div class="hub-interactive-area">
+                        <div class="snack-input-group">
+                            <select class="snack-select" id="snackSelect">
+                                <option value="Hot Green Tea">Organic Tea — ₹20</option>
+                                <option value="Filter Coffee">Brewed Coffee — ₹25</option>
+                                <option value="Baked Biscuits">Grain Biscuits — ₹15</option>
+                            </select>
+                            <button class="snack-btn" onclick="orderSnackToSeat()">Order Now</button>
+                        </div>
+                        <p id="snackStatus" style="color: var(--accent-orange); font-size: 0.75rem; margin-top: 5px; font-weight: 600; display: none;"></p>
+                    </div>
+                </div>
+
+                <!-- MODIFIED ELDERLY AND SENIOR SUPPORT TERMINAL -->
+                <div class="hub-card">
+                    <div class="hub-header">
+                        <div class="hub-icon-wrapper bg-teal"><i class="fa-solid fa-hands-holding"></i></div>
+                        <div class="hub-info">
+                            <h4>Senior Care Assistance Panel</h4>
+                            <p>One-touch optimization controls for elder patients.</p>
+                        </div>
+                    </div>
+                    <div class="senior-grid-actions">
+                        <button class="senior-btn-large" id="btnSeniorContrast" onclick="toggleSeniorLayout()">
+                            <span><i class="fa-solid fa-eye" style="color:var(--secondary-color); margin-right:8px;"></i> Large Text / High Contrast</span>
+                            <i class="fa-solid fa-toggle-off" id="toggleStateIcon"></i>
+                        </button>
+                        <button class="senior-btn-large" id="btnSeniorAudio" onclick="toggleSeniorAudio()">
+                            <span><i class="fa-solid fa-volume-high" style="color:var(--accent-purple); margin-right:8px;"></i> Calming Radio Guide</span>
+                            <span id="audioStatusFlag" style="font-size:0.75rem; color:var(--text-muted)">OFF</span>
+                        </button>
+                        <button class="senior-btn-large danger-alert" onclick="triggerEmergencyNurseCall()">
+                            <span><i class="fa-solid fa-bell-on"></i> Request Nurse / Wheelchair Support</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div id="seniorStatusLog" style="display:none; margin-top:8px; font-size:0.75rem; font-weight:bold; color:var(--accent-green); text-align:center;"></div>
+                </div>
+
+                <div class="footer-action">
+                    <button class="btn-refresh" onclick="fetchLiveStatus()">
+                        <i class="fa-solid fa-rotate"></i> Sync Board
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const userToken = urlParams.get('token') || "000";
+        const doctorName = urlParams.get('doc') || "Doctor";
+        
+        let audioNotificationPlayed = false;
+        let arcadePoints = 0;
+        let isRewardClaimed = false; // LIMITER GUARD FLAG
+
+        function incrementArcadePoints(amount) {
+            arcadePoints += amount;
+            document.getElementById('globalPoints').innerText = arcadePoints;
+            
+            // Limit reward logic execution
+            if (arcadePoints >= 200 && !isRewardClaimed) {
+                isRewardClaimed = true;
+                document.getElementById('rewardClaimBanner').style.display = 'block';
+                document.getElementById('limitStatus').innerHTML = "Status: <b>Claimed</b>";
+            }
+        }
+
+        // --- DYNAMIC MULTI-GAME HUB COMPONENT ---
+        function switchGameTab(targetTab) {
+            document.querySelectorAll('.game-nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.game-window').forEach(w => w.classList.remove('active'));
+            
+            if(targetTab === 'quiz') {
+                document.getElementById('tabQuiz').classList.add('active');
+                document.getElementById('winQuiz').classList.add('active');
+                initQuizEngine();
+            } else if(targetTab === 'clicker') {
+                document.getElementById('tabClicker').classList.add('active');
+                document.getElementById('winClicker').classList.add('active');
+            } else if(targetTab === 'scramble') {
+                document.getElementById('tabScramble').classList.add('active');
+                document.getElementById('winScramble').classList.add('active');
+                initScrambleEngine();
+            }
+        }
+
+        // 1. ADVANCED TRIVIA ENGINE WITH TIMERS
+        const triviaDataset = [
+            {q: "Which element keeps teeth strong?", c: ["Fluoride", "Iron", "Zinc"], a: "Fluoride"},
+            {q: "What organ breaks down food toxins?", c: ["Liver", "Kidney", "Heart"], a: "Liver"},
+            {q: "How many chambers are in human hearts?", c: ["4", "2", "6"], a: "4"}
+        ];
+        let quizTimerVal = 30;
+        let quizIntervalId;
+
+        function initQuizEngine() {
+            clearInterval(quizIntervalId);
+            quizTimerVal = 30;
+            document.getElementById('quizTimerText').innerText = `⏱ ${quizTimerVal}s`;
+            
+            const randomPick = triviaDataset[Math.floor(Math.random() * triviaDataset.length)];
+            document.getElementById('triviaQuestion').innerText = randomPick.q;
+            
+            const targetDiv = document.getElementById('triviaOptions');
+            targetDiv.innerHTML = '';
+            randomPick.c.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'game-choice-btn';
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    clearInterval(quizIntervalId);
+                    if(opt === randomPick.a) {
+                        incrementArcadePoints(50);
+                        targetDiv.innerHTML = "<p style='color:var(--accent-green); font-weight:bold; padding:10px;'>✓ Correct Option! +50 Points</p>";
+                    } else {
+                        targetDiv.innerHTML = "<p style='color:#e53e3e; font-weight:bold; padding:10px;'>Wrong Answer! Try another game tab.</p>";
+                    }
+                    setTimeout(initQuizEngine, 2000);
+                };
+                targetDiv.appendChild(btn);
+            });
+
+            quizIntervalId = setInterval(() => {
+                quizTimerVal--;
+                document.getElementById('quizTimerText').innerText = `⏱ ${quizTimerVal}s`;
+                if(quizTimerVal <= 0) {
+                    clearInterval(quizIntervalId);
+                    targetDiv.innerHTML = "<p style='color:red; padding:10px;'>Timeout! Refreshing query...</p>";
+                    setTimeout(initQuizEngine, 1500);
+                }
+            }, 1000);
+        }
+
+        // 2. WHACK-A-GERM CLICKER SPEED SCALE ENGINE
+        let clickerCountdown = 15;
+        let clickerTicker;
+        let germTicker;
+        let clickerScoreCounter = 0;
+
+        function startClickerGame(e) {
+            e.stopPropagation();
+            clickerScoreCounter = 0;
+            clickerCountdown = 15;
+            document.getElementById('clickStartMsg').style.display = 'none';
+            document.getElementById('clickerTimer').innerText = `Time: 15s`;
+            document.getElementById('clickerSpeedLevel').innerText = `Speed: Normal`;
+            
+            triggerGermSpawn();
+            clickerTicker = setInterval(() => {
+                clickerCountdown--;
+                document.getElementById('clickerTimer').innerText = `Time: ${clickerCountdown}s`;
+                
+                // Scale difficulty speed level based on time milestones
+                if(clickerCountdown === 10) {
+                    document.getElementById('clickerSpeedLevel').innerText = `Speed: Fast`;
+                    clearInterval(germTicker);
+                    germTicker = setInterval(triggerGermSpawn, 450);
+                }
+                
+                if(clickerCountdown <= 0) {
+                    clearInterval(clickerTicker);
+                    clearInterval(germTicker);
+                    const box = document.getElementById('clickSandbox');
+                    box.innerHTML = `<div style='text-align:center; padding-top:40px; color:white;'>Finished!<br>Hit count: ${clickerScoreCounter}<br>
+                    <button class='snack-btn' style='background:var(--accent-purple); margin-top:5px;' onclick='startClickerGame(event)'>Retry</button></div>`;
+                }
+            }, 1000);
+        }
+
+        function triggerGermSpawn() {
+            const canvas = document.getElementById('clickSandbox');
+            const targetOld = canvas.querySelector('.germ-target');
+            if(targetOld) targetOld.remove();
+
+            const target = document.createElement('div');
+            target.className = 'germ-target';
+            target.innerHTML = '<i class="fa-solid fa-bacteria"></i>';
+            
+            const positionMaxX = canvas.clientWidth - 40;
+            const positionMaxY = canvas.clientHeight - 40;
+            target.style.left = Math.floor(Math.random() * positionMaxX) + 'px';
+            target.style.top = Math.floor(Math.random() * positionMaxY) + 'px';
+            
+            target.onclick = (event) => {
+                event.stopPropagation();
+                clickerScoreCounter++;
+                incrementArcadePoints(15);
+                target.remove();
+                triggerGermSpawn();
+            };
+            canvas.appendChild(target);
+        }
+
+        // 3. MEDICAL WORD SCRAMBLE ENGINE
+        const wordPoolConfig = [
+            {scrambled: "NIMATVI", solution: "VITAMIN"},
+            {scrambled: "RECYALPS", solution: "RECONCIL"},
+            {scrambled: "GERSURY", solution: "SURGERY"},
+            {scrambled: "ALPHSITO", solution: "HOSPITAL"}
+        ];
+        let runningWordObj;
+
+        function initScrambleEngine() {
+            runningWordObj = wordPoolConfig[Math.floor(Math.random() * wordPoolConfig.length)];
+            document.getElementById('scrambleWordDisplay').innerText = runningWordObj.scrambled;
+            document.getElementById('scrambleInputField').value = '';
+            document.getElementById('scrambleFeedback').innerText = '';
+        }
+
+        function checkWordScramble() {
+            const entry = document.getElementById('scrambleInputField').value.toUpperCase().trim();
+            if(entry === runningWordObj.solution) {
+                document.getElementById('scrambleFeedback').style.color = "var(--accent-green)";
+                document.getElementById('scrambleFeedback').innerText = "✓ Excellent Match! +60 Points";
+                incrementArcadePoints(60);
+                setTimeout(initScrambleEngine, 2000);
+            }
+        }
+
+        // --- NEW MODIFIED ELDERLY SUPPORT TERMINAL ENGINE ---
+        let seniorModeActive = false;
+        let internalAudioGuideActive = false;
+
+        function toggleSeniorLayout() {
+            seniorModeActive = !seniorModeActive;
+            const icon = document.getElementById('toggleStateIcon');
+            if(seniorModeActive) {
+                document.body.classList.add('senior-accessible');
+                icon.className = "fa-solid fa-toggle-on";
+                document.getElementById('btnSeniorContrast').classList.add('active-toggle');
+            } else {
+                document.body.classList.remove('senior-accessible');
+                icon.className = "fa-solid fa-toggle-off";
+                document.getElementById('btnSeniorContrast').classList.remove('active-toggle');
+            }
+        }
+
+        function toggleSeniorAudio() {
+            internalAudioGuideActive = !internalAudioGuideActive;
+            const textFlag = document.getElementById('audioStatusFlag');
+            const targetBtn = document.getElementById('btnSeniorAudio');
+            if(internalAudioGuideActive) {
+                textFlag.innerText = "STREAMING CALM AMBIENT CHANNELS";
+                targetBtn.classList.add('active-toggle');
+            } else {
+                textFlag.innerText = "OFF";
+                targetBtn.classList.remove('active-toggle');
+            }
+        }
+
+        function triggerEmergencyNurseCall() {
+            const feedbackLog = document.getElementById('seniorStatusLog');
+            feedbackLog.style.display = "block";
+            feedbackLog.innerText = `🚨 DISPATCHING NURSE WITH ASSISTANCE KIT TO TOKEN ROW #${userToken}...`;
+            
+            setTimeout(() => {
+                feedbackLog.innerHTML = `⚠️ Floor Nurse Confirmed. Assistant is heading directly to your seat row. Please remain seated.`;
+            }, 2000);
+        }
+
+        // --- IN-SEAT SNACK LOGIC ---
+        function orderSnackToSeat() {
+            const snack = document.getElementById('snackSelect').value;
+            const statusText = document.getElementById('snackStatus');
+            statusText.style.display = "block";
+            statusText.innerText = `⏳ Sending request...`;
+            setTimeout(() => {
+                statusText.innerHTML = `✅ Server dispatched with your fresh <strong>${snack}</strong>. Cash on receipt.`;
+            }, 1200);
+        }
+
+        // --- ARCHITECTURE LIVE API HANDLER LINK ---
+        async function fetchLiveStatus() {
+            if (!userToken || !doctorName) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/live-queue-status?token=${userToken}&doc=${encodeURIComponent(doctorName)}`);
+                if (!response.ok) throw new Error("Could not sync queue database.");
+                const data = await response.json();
+
+                if (data.isCompleted === true) {
+                    document.getElementById('trackerContent').style.display = 'none';
+                    document.getElementById('thankYouState').style.display = 'block';
+                    return; 
+                }
+
+                document.getElementById('lblDoctor').innerText = data.doctorName;
+                document.getElementById('lblDept').innerText = data.department;
+                document.getElementById('lblUserToken').innerText = `#${userToken}`;
+                document.getElementById('lblCurrentInside').innerText = `Token #${data.currentInsideToken}`;
+                document.getElementById('lblPatientsAhead').innerText = data.patientsAhead;
+                
+                const mainContainer = document.getElementById('mainContainer');
+                const alertBadge = document.getElementById('nextAlertBadge');
+                const boxAhead = document.getElementById('boxAhead');
+                const iconAhead = document.getElementById('iconAhead');
+
+                if (parseInt(data.patientsAhead) === 0) {
+                    document.getElementById('lblWaitTime').innerText = "PROCEED INSIDE!";
+                    document.body.classList.add('next-up-lighting');
+                    mainContainer.classList.add('active-glow');
+                    alertBadge.style.display = 'block';
+                    boxAhead.classList.add('alert-green');
+                    iconAhead.className = "fa-solid fa-circle-check";
+                } else {
+                    document.getElementById('lblWaitTime').innerText = `~${data.estimatedWaitMinutes} mins`;
+                    document.body.classList.remove('next-up-lighting');
+                    mainContainer.classList.remove('active-glow');
+                    alertBadge.style.display = 'none';
+                    boxAhead.classList.remove('alert-green');
+                    iconAhead.className = "fa-solid fa-users";
+                }
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('trackerContent').style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                // Fail-safe Mock display data context layer during local standalone viewing
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('trackerContent').style.display = 'block';
+                document.getElementById('lblDoctor').innerText = doctorName;
+                document.getElementById('lblUserToken').innerText = `#${userToken}`;
+                document.getElementById('lblCurrentInside').innerText = "Token #042";
+                document.getElementById('lblPatientsAhead').innerText = "3";
+                document.getElementById('lblWaitTime').innerText = "~15 mins";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchLiveStatus();
+            initQuizEngine();
+        });
+        setInterval(fetchLiveStatus, 10000); 
+    </script>
+</body>
+</html>

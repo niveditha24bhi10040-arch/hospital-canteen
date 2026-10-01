@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Appointment Booking | MediVerse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #2D6A4F; 
+            --text: #1B4332; 
+            --accent: #52B788;
+            --danger: #bc4749;
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(rgba(216, 243, 220, 0.85), rgba(216, 243, 220, 0.85)), 
+                        url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh; 
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .back-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            transition: transform 0.2s;
+            align-self: flex-start;
+        }
+
+        .back-nav:hover {
+            transform: translateX(-4px);
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .panel-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(27, 67, 50, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-sizing: border-box;
+        }
+
+        .doctor-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid #E8F5E9;
+            padding-bottom: 25px;
+            margin-bottom: 30px;
+        }
+
+        .avatar-large {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(45, 106, 79, 0.2);
+        }
+
+        .header-info h2 { margin: 0 0 5px 0; font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+        .header-info p { margin: 0; font-size: 0.95rem; color: #4A5568; font-weight: 500; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #E8F5E9;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: white;
+            border: 1px solid #E8F5E9;
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .status-card i { font-size: 1.3rem; color: var(--accent); margin-bottom: 8px; }
+        .status-card h4 { margin: 0 0 5px 0; font-size: 0.8rem; color: #718096; text-transform: uppercase; }
+        .status-card .value { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #E8F5E9;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            padding: 12px 15px;
+            border: 1px solid #C4ECCE;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text);
+            outline: none;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: var(--primary);
+        }
+
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 14px rgba(45, 106, 79, 0.2);
+        }
+
+        .action-btn:hover { background: var(--text); transform: translateY(-1px); }
+        .action-btn:disabled { background: #a3b899; cursor: not-allowed; box-shadow: none; }
+
+        .ticket-receipt-card {
+            display: none;
+            background: #F4FBF7;
+            border: 2px solid var(--accent);
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .ticket-receipt-card h3 { margin: 0 0 5px 0; color: var(--primary); font-size: 1.4rem; }
+        .ticket-details { font-size: 0.9rem; color: #4A5568; margin-top: 15px; margin-bottom: 15px; line-height: 1.6; text-align: left; background: white; padding: 15px; border-radius: 12px; border: 1px solid #E8F5E9; }
+
+        .queue-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #E8F5E9;
+        }
+
+        .queue-table th, .queue-table td { padding: 12px 15px; text-align: left; }
+        .queue-table th { background: #E8F5E9; color: var(--text); font-weight: 700; font-size: 0.85rem; }
+        .queue-table td { border-bottom: 1px solid #F0FDF4; font-size: 0.9rem; }
+
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+        .status-pill.serving { background: #DCFCE7; color: #166534; }
+        .status-pill.waiting { background: #FEF9C3; color: #713F12; }
+
+        .live-pulse-dot {
+            width: 8px; height: 8px; background-color: var(--accent); border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 0 0 rgba(82, 183, 136, 0.7); animation: pulse-dot 1.6s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(82, 183, 136, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(82, 183, 136, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(82, 183, 136, 0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media(max-width: 950px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <a href="/" class="back-nav">
+            <i class="fa-solid fa-arrow-left"></i> Back to Patient Portal
+        </a>
+
+        <div class="panel-card" style="padding: 25px 35px;">
+            <div class="doctor-profile-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
+                <div class="avatar-large" id="docAvatar">Dr</div>
+                <div class="header-info">
+                    <h2 id="displayDocName">On-Duty Consultant</h2>
+                    <p id="displayDocDept">General Outpatient Department</p>
+                    <div class="badge">
+                        <span class="live-pulse-dot"></span> Secure Intake Portal Connected
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            
+            <div class="panel-card">
+                <h3 class="section-title"><i class="fa-solid fa-file-medical" style="color: var(--primary);"></i> Appointment Registration</h3>
+                
+                <form id="appointmentForm" onsubmit="handleAppointmentBooking(event)">
+                    <div class="form-group">
+                        <label for="patientName">Patient Full Name *</label>
+                        <input type="text" id="patientName" placeholder="Enter full identity name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientPhone">Contact Phone Number *</label>
+                        <input type="tel" id="patientPhone" placeholder="e.g. +91 9496534283" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rdate">Preferred Consultation Date *</label>
+                        <input type="date" id="rdate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="consultMode">Mode of Consultation *</label>
+                        <select id="consultMode" required>
+                            <option value="Online">Online Video Consultation</option>
+                            <option value="In-Person">In-Person Hospital Visit</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="symptoms">Symptoms & Clinical History (Optional)</label>
+                        <textarea id="symptoms" rows="3" placeholder="Briefly write down any symptoms or medical history..."></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="action-btn">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Confirm Appointment
+                    </button>
+                </form>
+
+                <div class="ticket-receipt-card" id="ticketReceipt">
+                    <i class="fa-solid fa-circle-check" style="font-size: 2.5rem; color: var(--accent);"></i>
+                    <h3>Registration Saved!</h3>
+                    <p style="margin: 5px 0 15px 0; font-size: 0.9rem; color: #555;">Your consultation file was securely synchronized with MongoDB Atlas.</p>
+                    
+                    <div class="ticket-details">
+                        <strong><i class="fa-solid fa-user"></i> Patient:</strong> <span id="recPatientName">--</span><br>
+                        <strong><i class="fa-solid fa-phone"></i> Phone:</strong> <span id="recPatientPhone">--</span><br>
+                        <strong><i class="fa-solid fa-calendar-day"></i> Date booked:</strong> <span id="recDate">--</span><br>
+                        <strong><i class="fa-solid fa-video"></i> Channel Mode:</strong> <span id="recMode">--</span><br>
+                        <strong><i class="fa-solid fa-user-doctor"></i> Consultant Assigned:</strong> <span id="recDoctor">--</span>
+                    </div>
+                    
+                    <p style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin: 0; padding-top: 5px;">
+                        <i class="fa-solid fa-circle-info"></i> The hospital desk will generate your active queue trace ticket shortly.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <h3 class="section-title"><span class="live-pulse-dot"></span> Live Queue Tracker</h3>
+
+                <div class="status-grid">
+                    <div class="status-card">
+                        <i class="fa-solid fa-user-doctor"></i>
+                        <h4>Active Room</h4>
+                        <div class="value" id="currentServingVal">#01</div>
+                    </div>
+                    <div class="status-card">
+                        <i class="fa-solid fa-users"></i>
+                        <h4>In Pipeline</h4>
+                        <div class="value" id="totalQueueVal">3 Patients</div>
+                    </div>
+                    <div class="status-card">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        <h4>Est. Wait</h4>
+                        <div class="value" id="waitTimeVal">15 Mins</div>
+                    </div>
+                </div>
+
+                <div class="queue-list-section">
+                    <table class="queue-table">
+                        <thead>
+                            <tr>
+                                <th>Token Sequence</th>
+                                <th>Patient Reference Name</th>
+                                <th>Current Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queueListBody">
+                            <tr>
+                                <td><strong>#01</strong></td>
+                                <td>Amit Kumar</td>
+                                <td><span class="status-pill serving">In Consultation</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>#02</strong></td>
+                                <td>Meera Fernandes</td>
+                                <td><span class="status-pill waiting">Next Inline</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>#03</strong></td>
+                                <td>Suresh Iyer</td>
+                                <td><span class="status-pill waiting">Waiting</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function getUrlParameters() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                return {
+                    doctor: params.get('doctor') || "",
+                    dept: params.get('dept') || ""
+                };
+            } catch(e) {
+                console.error("Failed executing parameter stream extraction:", e);
+                return { doctor: "", dept: "" };
+            }
+        }
+
+        function initPage() {
+            const data = getUrlParameters();
+            
+            if (data.doctor && data.doctor.trim() !== "") {
+                document.getElementById('displayDocName').innerText = data.doctor;
+                
+                const pureName = data.doctor.replace("Dr. ", "").trim();
+                const parts = pureName.split(' ').filter(p => p.length > 0);
+                const initials = parts.map(n => n[0]).join('').toUpperCase();
+                document.getElementById('docAvatar').innerText = initials || "Dr";
+            }
+            
+            if (data.dept && data.dept.trim() !== "") {
+                document.getElementById('displayDocDept').innerText = data.dept;
+            }
+
+            document.getElementById('rdate').value = new Date().toISOString().split('T')[0];
+        }
+
+        async function handleAppointmentBooking(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const pName = document.getElementById('patientName').value.trim();
+            const pPhone = document.getElementById('patientPhone').value.trim();
+            const appointmentDate = document.getElementById('rdate').value;
+            const consultMode = document.getElementById('consultMode').value;
+            const symptoms = document.getElementById('symptoms').value.trim();
+            
+            const doctorName = document.getElementById('displayDocName').innerText;
+            const department = document.getElementById('displayDocDept').innerText;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Registering File...`;
+
+            try {
+                const response = await fetch('/api/queue/book-consultation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patientName: pName,
+                        doctorName: doctorName,
+                        department: department,
+                        appointmentDate: appointmentDate,
+                        consultMode: consultMode,
+                        symptoms: symptoms || `Booking portal submission contact reference via ${pPhone}`
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    document.getElementById('appointmentForm').style.display = 'none';
+                    
+                    document.getElementById('recPatientName').innerText = pName;
+                    document.getElementById('recPatientPhone').innerText = pPhone;
+                    document.getElementById('recDate').innerText = appointmentDate;
+                    document.getElementById('recMode').innerText = consultMode;
+                    document.getElementById('recDoctor').innerText = doctorName;
+                    
+                    document.getElementById('ticketReceipt').style.display = 'block';
+
+                    const tbody = document.getElementById('queueListBody');
+                    const newRow = document.createElement('tr');
+                    newRow.style.background = '#F4FBF7';
+                    newRow.style.fontWeight = '600';
+                    newRow.innerHTML = `
+                        <td><strong style="color: var(--primary);">#04</strong></td>
+                        <td>${pName} (Pending Desk)</td>
+                        <td><span class="status-pill waiting">Registered</span></td>
+                    `;
+                    tbody.appendChild(newRow);
+
+                    document.getElementById('totalQueueVal').innerText = `${tbody.rows.length} Patients`;
+                    document.getElementById('waitTimeVal').innerText = `${tbody.rows.length * 5} Mins`;
+
+                } else {
+                    alert("⚠️ Server Registry Notice: " + (result.message || "Failed executing storage write layout. Try again."));
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirm Appointment`;
+                }
+
+            } catch (err) {
+                console.error("Network communication exception encountered:", err);
+                alert("❌ Connection Drop: Could not communicate with server database API pipeline framework.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirm Appointment`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

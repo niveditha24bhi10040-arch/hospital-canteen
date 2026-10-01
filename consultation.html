@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Consultation | CareBite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #2D6A4F; 
+            --accent: #40916C;
+            --text: #1B4332; 
+            --bg: #D8F3DC;
+            --white: #ffffff;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg);
+            background-image: linear-gradient(rgba(216, 243, 220, 0.9), rgba(216, 243, 220, 0.9)), 
+                              url('https://images.unsplash.com/photo-1576091160550-2173dad99901?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .back-nav {
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+
+        .back-link:hover {
+            transform: translateX(-5px);
+        }
+
+        header {
+            text-align: left;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0;
+            letter-spacing: -2px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #edf2f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 106, 79, 0.3);
+        }
+
+        .sidebar-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 24px;
+            border: 1px solid white;
+        }
+
+        .sidebar-card h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        .prep-list {
+            padding: 0;
+            list-style: none;
+        }
+
+        .prep-list li {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .prep-list li::before {
+            content: "✓";
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .status-badge {
+            background: #B7E4C7;
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="back-nav">
+            <!-- Link this back to your main control center page -->
+            <a href="index.html" class="back-link">← Back to Control Center</a>
+        </nav>
+
+        <header>
+            <div class="status-badge">Virtual Care Active</div>
+            <h1>Consultation</h1>
+            <p>Schedule a secure video call with our certified medical staff.</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Appointment Form -->
+            <section class="card">
+                <form id="consultForm">
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select required>
+                            <option value="">Select a specialty</option>
+                            <option value="general">General Medicine</option>
+                            <option value="cardio">Cardiology</option>
+                            <option value="pediatrics">Pediatrics</option>
+                            <option value="mental">Mental Health</option>
+                            <option value="nutrition">Nutri-Hub Specialist</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Preferred Date</label>
+                        <input type="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Consultation Type</label>
+                        <select>
+                            <option value="video">Video Call (Standard)</option>
+                            <option value="audio">Audio Only</option>
+                            <option value="chat">Secure Text Chat</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reason for Consultation</label>
+                        <textarea rows="4" placeholder="Briefly describe your symptoms or questions..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Request Video Call</button>
+                </form>
+            </section>
+
+            <!-- Sidebar Info -->
+            <aside>
+                <div class="sidebar-card">
+                    <h3>Quick Prep Guide</h3>
+                    <ul class="prep-list">
+                        <li>Ensure you have a stable internet connection.</li>
+                        <li>Find a quiet, well-lit room for your call.</li>
+                        <li>Have your latest lab reports (from Lab Portal) ready.</li>
+                        <li>Keep a list of current medications nearby.</li>
+                    </ul>
+                    <hr style="border: 0; border-top: 1px solid rgba(0,0,0,0.1); margin: 20px 0;">
+                    <p style="font-size: 0.85rem; color: #555;">
+                        <strong>Emergency?</strong> If you are experiencing a life-threatening situation, please call emergency services immediately rather than booking a consultation.
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('consultForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert("Success! Your consultation request has been sent. Check the Patient Portal for your meeting link.");
+            window.location.href = "index.html"; // Redirects back to dashboard
+        });
+    </script>
+
+</body>
+</html>

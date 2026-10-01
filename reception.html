@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediVerse | Reception Queue Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #2D6A4F;
+            --text: #1B4332;
+            --accent: #52B788;
+            --light-green: #E8F5E9;
+            --danger: #bc4749;
+            --warning: #f1a545;
+            --whatsapp: #25D366;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f5;
+            margin: 0;
+            padding: 25px 20px;
+            color: var(--text);
+        }
+
+        /* --- TWO COLUMN BALANCED WORKSPACE LAYOUT --- */
+        .workspace-layout {
+            max-width: 1750px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 25px;
+            align-items: start;
+        }
+
+        @media (max-width: 1100px) {
+            .workspace-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 10px 30px rgba(27, 67, 50, 0.05);
+            border: 1px solid #e1e8e4;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .board-card {
+            min-height: calc(100vh - 80px);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #E8F5E9;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .subtitle-desc {
+            font-size: 0.85rem;
+            color: #556B5C;
+            margin-top: -5px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .btn-whatsapp-send {
+            background: var(--whatsapp);
+            color: white;
+            font-weight: 700;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s, background-color 0.2s;
+            font-size: 0.95rem;
+        }
+        .btn-whatsapp-send:hover {
+            background: #128C7E;
+            transform: translateY(-1px);
+        }
+
+        /* --- DYNAMIC MULTI-COLUMN DOCTOR GRID SYSTEM --- */
+        .doctors-segregation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 18px;
+            flex-grow: 1;
+            margin-top: 10px;
+        }
+
+        .doctor-board-column {
+            background: #f8faf9;
+            border-radius: 16px;
+            border: 1px solid #e3ebd7;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 180px);
+        }
+
+        .doctor-column-header {
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 10px rgba(45, 106, 79, 0.1);
+        }
+
+        .doctor-column-header span.count-badge {
+            background: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 800;
+        }
+
+        .feed-container {
+            overflow-y: auto;
+            padding-right: 2px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        /* Patient Row Design */
+        .patient-row-item {
+            background: white;
+            border: 1px solid #e1e8e4;
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.01);
+            transition: all 0.2s;
+        }
+        .patient-row-item:hover { 
+            border-color: var(--accent); 
+            transform: translateY(-1px);
+        }
+
+        .row-main-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .patient-meta-details h4 { margin: 0 0 4px 0; font-size: 0.98rem; color: var(--text); font-weight: 700; }
+        .patient-meta-details p { margin: 0; font-size: 0.8rem; color: #556B5C; line-height: 1.4; }
+
+        .status-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .status-badge.waiting { background: #E8F5E9; color: var(--primary); }
+        .status-badge.registered { background: #E8F5E9; color: var(--primary); }
+        .status-badge.inside { background: #fff5f5; color: var(--danger); animation: pulseBadge 2s infinite; }
+        .status-badge.completed { background: #e3f2fd; color: #0d47a1; }
+        .status-badge.token-issued { background: #E3F2FD; color: #0D47A1; }
+        .status-badge.missed { background: #fdf0f0; color: var(--danger); border: 1px solid rgba(188,71,73,0.2); }
+
+        .action-button-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            border-top: 1px solid #f0f4f1;
+            padding-top: 10px;
+        }
+
+        .action-button-matrix .btn-action {
+            border: none;
+            padding: 8px 2px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: white;
+            transition: background 0.2s;
+        }
+        .action-button-matrix .btn-action:hover { opacity: 0.85; }
+
+        /* Dynamic Visual Button Color Alterations */
+        .btn-qr { background: var(--whatsapp); color: white; }
+        .btn-qr.sent-active { background: var(--danger) !important; animation: pulseRedButton 2s infinite; }
+        
+        .btn-room { background: #bc4749; }
+        .btn-done { background: #3a86ff; }
+        .btn-miss { background: #6c757d; }
+
+        .ticket-slip {
+            background: white;
+            border: 2px dashed #a1b5a9;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .token-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin: 12px 0;
+            line-height: 1;
+        }
+
+        .input-phone {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #c2d1c7;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            color: var(--text);
+            font-weight: 600;
+        }
+        .input-phone:focus {
+            outline: none;
+            border-color: var(--whatsapp);
+            box-shadow: 0 0 5px rgba(37, 211, 102, 0.2);
+        }
+
+        @keyframes pulseCardGlow {
+            0% { box-shadow: 0 0 5px rgba(82, 183, 136, 0.2); border-color: #a3e2c5; }
+            50% { box-shadow: 0 0 18px rgba(82, 183, 136, 0.5); border-color: var(--accent); background-color: #ebfaf1; }
+            100% { box-shadow: 0 0 5px rgba(82, 183, 136, 0.2); border-color: #a3e2c5; }
+        }
+
+        @keyframes pulseRedButton {
+            0% { box-shadow: 0 0 0 0 rgba(188, 71, 73, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(188, 71, 73, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(188, 71, 73, 0); }
+        }
+
+        @keyframes pulseBadge {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="workspace-layout">
+        
+        <div class="card board-card">
+            <h2><i class="fa-solid fa-table-columns"></i> Dynamic Consultations Hub</h2>
+            <p class="subtitle-desc">Patient queue lines automatically mapped and grouped under their respective clinician columns.</p>
+            
+            <div class="doctors-segregation-grid" id="dynamicDoctorsGrid">
+                <p style="padding: 20px; color: #556B5C; font-size: 0.95rem;">Syncing system doctor channels from Atlas...</p>
+            </div>
+        </div>
+
+        <div class="card ticket-column-sticky" id="slipColumnContainer" style="opacity: 0.5; pointer-events: none; transition: all 0.3s; position: sticky; top: 25px;">
+            <h2><i class="fa-brands fa-whatsapp"></i> WhatsApp Token Dispatch</h2>
+            <p class="subtitle-desc" id="slipPlaceholderMsg">Select a patient card action token pipeline to generate dispatch links.</p>
+            
+            <div id="slipContainer" style="display: none; width: 100%;">
+                <div class="ticket-slip">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary); margin-bottom: 5px;">MediVerse WhatsApp Gateway</div>
+                    <span style="font-size: 0.8rem; color: #556B5C; font-weight: 500;">Live Queue Remote Access Track</span>
+                    
+                    <div class="token-number" id="slipToken">T-00</div>
+                    
+                    <div style="font-weight: 700; font-size: 0.95rem;" id="slipDoc">Awaiting Selection...</div>
+                    <div style="font-size: 0.85rem; color: #556B5C; margin-bottom: 15px;" id="slipPatient">Patient: -</div>
+                    
+                    <label style="display: block; text-align: left; font-size: 0.78rem; font-weight: 700; color: #556B5C; margin-bottom: 5px;">Patient WhatsApp Number:</label>
+                    <input type="text" id="patientPhoneNumberInput" class="input-phone" placeholder="e.g., +919876543210" value="+91">
+                    
+                    <button class="btn-whatsapp-send" onclick="dispatchWhatsAppMessage()">
+                        <i class="fa-brands fa-whatsapp"></i> Send WhatsApp Link
+                    </button>
+                    
+                    <span style="font-size: 0.73rem; color: #556B5C; display: block; padding: 12px 5px 0 5px; line-height: 1.4;">
+                        Sending turns the tracking parameter from <span style="color:var(--whatsapp); font-weight:700;">Green</span> to <span style="color:var(--danger); font-weight:700;">Red</span> when the appointment session begins inside the clinic.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let activeSessionsMap = {};
+        let dynamicDoctorsList = [];
+        let dispatchedPatientsTrackerMap = JSON.parse(localStorage.getItem('dispatched_whatsapp_tokens') || '{}');
+        let currentAlertStateMap = {}; 
+        let globalSelectedTokenData = null;
+
+        function getSafeId(name) {
+            if (!name) return 'unknown';
+            return name.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
+        }
+
+        async function fetchConsultantDoctors() {
+            try {
+                const response = await fetch('/api/doctors');
+                const doctorsData = await response.json();
+
+                if (doctorsData && doctorsData.length > 0) {
+                    const uniqueDocs = [...new Set(doctorsData.map(d => {
+                        const val = d["Doctor Name"] || d["doctorName"] || d["doctor_name"];
+                        return val ? val.trim() : '';
+                    }))].filter(Boolean);
+                    
+                    if(uniqueDocs.length > 0) {
+                        dynamicDoctorsList = uniqueDocs;
+                        buildMultiColumnLayout(uniqueDocs);
+                        return;
+                    }
+                }
+                
+                const fallbackRes = await fetch('/api/queue/consultant-connections');
+                const registrations = await fallbackRes.json();
+                if (registrations && registrations.length > 0) {
+                    const uniqueDocs = [...new Set(registrations.map(p => {
+                        const val = p.doctorName || p.doctor_name;
+                        return val ? val.trim() : '';
+                    }))].filter(Boolean);
+                    
+                    if(uniqueDocs.length > 0) {
+                        dynamicDoctorsList = uniqueDocs;
+                        buildMultiColumnLayout(uniqueDocs);
+                        return;
+                    }
+                }
+                useFallbackDoctors();
+            } catch (err) {
+                console.error("Error connecting with Atlas provider nodes:", err);
+                useFallbackDoctors();
+            }
+        }
+
+        function useFallbackDoctors() {
+            dynamicDoctorsList = [];
+            const gridContainer = document.getElementById('dynamicDoctorsGrid');
+            gridContainer.innerHTML = `<p style="padding: 20px; color: #556B5C; font-size: 0.95rem;"><i class="fa-solid fa-circle-info"></i> No doctors have been registered in the system database yet.</p>`;
+        }
+
+        function buildMultiColumnLayout(doctors) {
+            const gridContainer = document.getElementById('dynamicDoctorsGrid');
+            gridContainer.innerHTML = "";
+
+            if (doctors.length === 0) {
+                useFallbackDoctors();
+                return;
+            }
+
+            const columnColorSchemes = ["#2D6A4F", "#1a4968", "#5c2a68", "#8c2d2d", "#7c6412"];
+
+            doctors.forEach((doc, index) => {
+                const safeId = getSafeId(doc);
+                const assignedColor = columnColorSchemes[index % columnColorSchemes.length];
+
+                gridContainer.innerHTML += `
+                    <div class="doctor-board-column" id="col-wrapper-${safeId}">
+                        <div class="doctor-column-header" style="background-color: ${assignedColor}">
+                            <div><i class="fa-solid fa-user-doctor"></i> ${doc}</div>
+                            <span class="count-badge" style="color: ${assignedColor}" id="count-${safeId}">0</span>
+                        </div>
+                        <div class="feed-container" id="feed-${safeId}">
+                            <p style="text-align:center; padding-top:20px; font-size:0.8rem; color:#a1b5a9;">Refreshing lines...</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function loadAtlasRegistrations() {
+            try {
+                if (dynamicDoctorsList.length === 0) {
+                    await fetchConsultantDoctors();
+                }
+
+                // Points securely to the user's targeted MongoDB Atlas Collection route
+                const registrationsResponse = await fetch('/api/queue/consultant-connections');
+                let registrations = await registrationsResponse.json();
+
+                for (let doc of dynamicDoctorsList) {
+                    try {
+                        const stateRes = await fetch(`/api/queue/live-status?doctorName=${encodeURIComponent(doc.trim())}`);
+                        if (stateRes.ok) {
+                            const stateData = await stateRes.json();
+                            activeSessionsMap[doc] = stateData.fullQueue || [];
+                        }
+                    } catch (e) { 
+                        activeSessionsMap[doc] = []; 
+                    }
+                }
+
+                dynamicDoctorsList.forEach(doc => {
+                    const el = document.getElementById(`feed-${getSafeId(doc)}`);
+                    if(el) el.innerHTML = "";
+                });
+
+                const columnCounters = {};
+                dynamicDoctorsList.forEach(doc => columnCounters[doc] = 0);
+
+                const nextWaitingPatientMap = {};
+                dynamicDoctorsList.forEach(doc => {
+                    const docQueue = activeSessionsMap[doc] || [];
+                    const nextUp = docQueue.find(q => q.status === "Waiting");
+                    if (nextUp) {
+                        nextWaitingPatientMap[doc] = nextUp.patientName;
+                    }
+                });
+
+                registrations.forEach(patient => {
+                    const targetDoc = (patient.doctorName || patient.doctor_name || '').trim();
+                    if (!dynamicDoctorsList.includes(targetDoc)) return;
+
+                    const docQueue = activeSessionsMap[targetDoc] || [];
+                    const currentPatientName = patient.patientName || patient.patient_name || "Unknown Patient";
+                    const liveMatch = docQueue.find(q => q.patientName === currentPatientName);
+                    
+                    let statusLabel = patient.status || "Registered";
+                    let statusClass = statusLabel.toLowerCase().replace(" ", "-");
+                    let tokenText = "None";
+                    let isWhatsAppSentForThisPatient = false;
+
+                    if (liveMatch) {
+                        statusLabel = liveMatch.status;
+                        statusClass = liveMatch.status.toLowerCase();
+                        tokenText = `T-${liveMatch.tokenId}`;
+                        
+                        const uniqueMapKey = `${targetDoc}_T${liveMatch.tokenId}`;
+                        if(dispatchedPatientsTrackerMap[uniqueMapKey]) {
+                            isWhatsAppSentForThisPatient = true;
+                        }
+
+                        if ((statusLabel === "Inside" || statusLabel === "Next") && !currentAlertStateMap[uniqueMapKey]) {
+                            currentAlertStateMap[uniqueMapKey] = true;
+                            alert(`🔔 LIVE QUEUE ALERT: Patient ${currentPatientName} (${tokenText}) status is now: ${statusLabel} for ${targetDoc}!`);
+                        }
+                    }
+
+                    if (statusLabel === "Completed" || statusLabel === "Missed") {
+                        return;
+                    }
+
+                    columnCounters[targetDoc]++;
+                    const isNextPatientUp = nextWaitingPatientMap[targetDoc] === currentPatientName && tokenText !== "None";
+                    
+                    let specialGlowStyle = "";
+                    if (isNextPatientUp) {
+                        specialGlowStyle = `animation: pulseCardGlow 2.5s infinite; border-width: 2px;`;
+                    }
+
+                    let whatsappButtonClassModifier = "btn-qr";
+                    let whatsappIconLabel = "fa-brands fa-whatsapp";
+                    let buttonTitleOverride = "Link Tracking Parameters via WhatsApp Node";
+
+                    if (isWhatsAppSentForThisPatient) {
+                        if (statusLabel === "Inside" || statusLabel === "Next") {
+                            whatsappButtonClassModifier = "btn-qr sent-active";
+                            whatsappIconLabel = "fa-solid fa-triangle-exclamation";
+                            buttonTitleOverride = "Patient's Consultation Turn is Active inside Clinic!";
+                        } else {
+                            whatsappButtonClassModifier = "btn-qr"; 
+                            whatsappIconLabel = "fa-solid fa-check-double";
+                        }
+                    }
+
+                    const apptDate = patient.appointmentDate ? new Date(patient.appointmentDate).toLocaleDateString() : 'N/A';
+                    const columnFeedElement = document.getElementById(`feed-${getSafeId(targetDoc)}`);
+
+                    if (columnFeedElement) {
+                        const cleanDoc = targetDoc.replace(/'/g, "\\'");
+                        const cleanPat = currentPatientName.replace(/'/g, "\\'");
+                        
+                        const phoneDisplay = patient.patientPhone || patient.patient_phone || "Not Provided";
+                        const symptomsDisplay = patient.symptoms || "None Declared";
+                        const consultModeDisplay = patient.consultMode || patient.consult_mode || 'Online';
+                        const recordId = patient._id;
+
+                        columnFeedElement.innerHTML += `
+                            <div class="patient-row-item" style="${specialGlowStyle}">
+                                <div class="row-main-meta">
+                                    <div class="patient-meta-details">
+                                        <h4>${currentPatientName} <span style="font-size:0.75rem; font-weight:600; color:var(--accent);">(${consultModeDisplay})</span></h4>
+                                        <p><i class="fa-solid fa-phone" style="font-size:0.75rem; width:14px;"></i> <b>Phone:</b> ${phoneDisplay}</p>
+                                        <p><i class="fa-solid fa-notes-medical" style="font-size:0.75rem; width:14px;"></i> <b>Symptoms:</b> ${symptomsDisplay}</p>
+                                        <p><i class="fa-solid fa-calendar-day" style="font-size:0.75rem; width:14px;"></i> <b>Scheduled:</b> ${apptDate}</p>
+                                        <p style="font-size:0.78rem; margin-top:5px; font-weight:600; color:var(--primary);">
+                                            <i class="fa-solid fa-ticket"></i> Active Token: ${tokenText}
+                                        </p>
+                                        ${isNextPatientUp ? `<span style="display:inline-block; margin-top:6px; font-size:0.68rem; font-weight:800; background:var(--accent); color:white; padding:2px 7px; border-radius:4px; box-shadow: 0 2px 6px rgba(82,183,136,0.2);"><i class="fa-solid fa-star-of-life fa-spin" style="font-size:0.6rem;"></i> NEXT UP</span>` : ''}
+                                    </div>
+                                    <span class="status-badge ${statusClass}">${statusLabel}</span>
+                                </div>
+                                <div class="action-button-matrix">
+                                    <button class="btn-action ${whatsappButtonClassModifier}" title="${buttonTitleOverride}" onclick="convertRecordToWhatsAppPanel('${recordId}')">
+                                        <i class="${whatsappIconLabel}"></i> WhatsApp
+                                    </button>
+                                    <button class="btn-action btn-room" title="Mark Patient Inside Room" onclick="updatePatientStatusDirectly('${cleanDoc}', '${cleanPat}', 'Inside', '${recordId}')">
+                                        <i class="fa-solid fa-door-open"></i> Inside
+                                    </button>
+                                    <button class="btn-action btn-done" title="Complete Consultation" onclick="updatePatientStatusDirectly('${cleanDoc}', '${cleanPat}', 'Completed', '${recordId}')">
+                                        <i class="fa-solid fa-circle-check"></i> Done
+                                    </button>
+                                    <button class="btn-action btn-miss" title="Mark Patient Missed" onclick="updatePatientStatusDirectly('${cleanDoc}', '${cleanPat}', 'Missed', '${recordId}')">
+                                        <i class="fa-solid fa-user-slash"></i> Miss
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                dynamicDoctorsList.forEach(doc => {
+                    const safeId = getSafeId(doc);
+                    const countBadge = document.getElementById('count-' + safeId);
+                    const feedBox = document.getElementById('feed-${safeId}');
+                    const feedBoxFallback = document.getElementById('feed-' + safeId);
+                    
+                    if (countBadge) countBadge.innerText = columnCounters[doc];
+                    if (feedBoxFallback && columnCounters[doc] === 0) {
+                        feedBoxFallback.innerHTML = `<p style="text-align:center; padding-top:30px; font-size:0.8rem; color:#a1b5a9;">No active appointments.</p>`;
+                    }
+                });
+
+            } catch (err) {
+                console.error("Live streaming loop parsing error:", err);
+            }
+        }
+
+        async function convertRecordToWhatsAppPanel(recordId) {
+            try {
+                const res = await fetch('/api/queue/convert-registration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ registrationId: recordId })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    const trackingUrl = `live-track?doctorName=${encodeURIComponent(data.doctorName.trim())}&token=${data.tokenId}`;
+                    
+                    globalSelectedTokenData = {
+                        tokenId: data.tokenId,
+                        doctorName: data.doctorName.trim(),
+                        patientName: data.patientName,
+                        urlPath: trackingUrl,
+                        patientPhone: data.patientPhone || data.patient_phone || ""
+                    };
+
+                    renderWhatsAppForm();
+                    await loadAtlasRegistrations();
+                } else {
+                    alert(data.message || "Token routing assignment pipeline fault.");
+                }
+            } catch (err) {
+                alert("Database context verification link exception.");
+            }
+        }
+
+        function renderWhatsAppForm() {
+            if(!globalSelectedTokenData) return;
+
+            const slipCol = document.getElementById('slipColumnContainer');
+            const placeholder = document.getElementById('slipPlaceholderMsg');
+            
+            document.getElementById('slipToken').innerText = `T-${globalSelectedTokenData.tokenId}`;
+            document.getElementById('slipDoc').innerText = globalSelectedTokenData.doctorName;
+            document.getElementById('slipPatient').innerText = `Patient: ${globalSelectedTokenData.patientName}`;
+
+            const phoneInput = document.getElementById('patientPhoneNumberInput');
+            if (globalSelectedTokenData.patientPhone && globalSelectedTokenData.patientPhone !== "Not Provided") {
+                phoneInput.value = globalSelectedTokenData.patientPhone;
+            } else {
+                phoneInput.value = "+91";
+            }
+
+            slipCol.style.opacity = "1";
+            slipCol.style.pointerEvents = "auto";
+            placeholder.style.display = "none";
+            document.getElementById('slipContainer').style.display = 'block';
+        }
+
+        function dispatchWhatsAppMessage() {
+            if(!globalSelectedTokenData) return;
+
+            let phone = document.getElementById('patientPhoneNumberInput').value.replace(/[^0-9]/g, "");
+            if(!phone || phone.length < 10) {
+                alert("Please input a valid WhatsApp mobile number containing country code elements.");
+                return;
+            }
+
+            const resolveUrl = new URL(globalSelectedTokenData.urlPath, window.location.href);
+            if (resolveUrl.hostname === 'localhost' || resolveUrl.hostname === '127.0.0.1') {
+                resolveUrl.protocol = 'http:';
+            }
+            const absoluteTrackingUrl = resolveUrl.href;
+            
+            const contextMsg = `Hello ${globalSelectedTokenData.patientName},\n\nYour active Live OP Consultation Queue Token for *${globalSelectedTokenData.doctorName}* has been processed successfully!\n\n*🎫 Token Number:* T-${globalSelectedTokenData.tokenId}\n\n👉 Track your live real-time position status and timely wait estimate metrics from anywhere here:\n${absoluteTrackingUrl}\n\nThank you for choosing MediVerse Hospital. Please monitor your live tracker dashboard link closely. Your tracking button turns red when your consultation session begins inside the doctor's room.`;
+
+            const whatsappApiUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(contextMsg)}`;
+            
+            const uniqueMapKey = `${globalSelectedTokenData.doctorName}_T${globalSelectedTokenData.tokenId}`;
+            dispatchedPatientsTrackerMap[uniqueMapKey] = true;
+            localStorage.setItem('dispatched_whatsapp_tokens', JSON.stringify(dispatchedPatientsTrackerMap));
+
+            window.open(whatsappApiUrl, '_blank');
+            loadAtlasRegistrations();
+        }
+
+        async function updatePatientStatusDirectly(doctorName, patientName, nextStatus, recordId) {
+            try {
+                const trimmedDoc = doctorName.trim();
+                const currentQueue = activeSessionsMap[trimmedDoc] || [];
+                let patientNode = currentQueue.find(p => p.patientName === patientName);
+
+                if (!patientNode) {
+                    const resConvert = await fetch('/api/queue/convert-registration', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ registrationId: recordId })
+                    });
+                    const dataConvert = await resConvert.json();
+
+                    if (resConvert.ok && dataConvert.success) {
+                        const stateRes = await fetch(`/api/queue/live-status?doctorName=${encodeURIComponent(trimmedDoc)}`);
+                        if (stateRes.ok) {
+                            const stateData = await stateRes.json();
+                            activeSessionsMap[trimmedDoc] = stateData.fullQueue || [];
+                            patientNode = activeSessionsMap[trimmedDoc].find(p => p.patientName === patientName);
+                        }
+                    } else {
+                        alert("Failed to auto-provision token track reference node.");
+                        return;
+                    }
+                }
+
+                const response = await fetch('/api/queue/update-state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        doctorName: trimmedDoc, 
+                        tokenId: patientNode.tokenId,
+                        patientName: patientName,
+                        registrationId: recordId, 
+                        status: nextStatus,
+                        actionType: "SET_STATUS_BY_NAME"
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok || result.success) {
+                    await loadAtlasRegistrations();
+                } else {
+                    alert(result.message || "Operational state change event rejected by server.");
+                }
+            } catch (err) {
+                console.error("State transmission fault:", err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchConsultantDoctors();
+            await loadAtlasRegistrations();
+            setInterval(loadAtlasRegistrations, 5000);
+        });
+    </script>
+</body>
+</html>
